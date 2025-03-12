@@ -56,7 +56,12 @@ import {
   TimeseriesChartTransformedProps,
 } from './types';
 import { DEFAULT_FORM_DATA } from './constants';
-import { ForecastSeriesEnum, ForecastValue, Refs } from '../types';
+import {
+  ForecastSeriesEnum,
+  ForecastValue,
+  Refs,
+  EchartsTimeseriesSeriesType,
+} from '../types';
 import { parseAxisBound } from '../utils/controls';
 import {
   calculateLowerLogTick,
@@ -106,6 +111,31 @@ import {
   getXAxisFormatter,
   getYAxisFormatter,
 } from '../utils/formatters';
+
+const seriesFormatting = (
+  series: SeriesOption[],
+  isHorizontal: boolean,
+  seriesType: EchartsTimeseriesSeriesType,
+) =>
+  series.map(seriesItem => ({
+    ...seriesItem,
+    data:
+      Array.isArray(seriesItem.data) && seriesType === 'bar'
+        ? seriesItem.data.map(value => {
+            const negativeValue = isHorizontal ? value[0] : value[1];
+            let result = null;
+            if (negativeValue < 0) {
+              result = {
+                value,
+                label: {
+                  position: isHorizontal ? 'left' : 'bottom',
+                },
+              };
+            }
+            return result || value;
+          })
+        : seriesItem.data,
+  }));
 
 export default function transformProps(
   chartProps: EchartsTimeseriesChartProps,
@@ -626,7 +656,11 @@ export default function transformProps(
       ),
       data: legendData as string[],
     },
-    series: dedupSeries(reorderForecastSeries(series) as SeriesOption[]),
+    series: seriesFormatting(
+      dedupSeries(reorderForecastSeries(series) as SeriesOption[]),
+      isHorizontal,
+      seriesType,
+    ),
     toolbox: {
       show: zoomable,
       top: TIMESERIES_CONSTANTS.toolboxTop,
