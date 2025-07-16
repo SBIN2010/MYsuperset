@@ -318,9 +318,7 @@ export function saveDashboardRequest(data, id, saveType) {
       slug: slug || null,
       tags: !isFeatureEnabled(FeatureFlag.TaggingSystem)
         ? undefined
-        : ensureIsArray(tags || [])
-            .filter(o => o.type === 1)
-            .map(r => (hasId(r) ? r.id : r)),
+        : ensureIsArray(tags || []).map(r => (hasId(r) ? r.id : r)),
       metadata: {
         ...data.metadata,
         color_namespace: getColorNamespace(data.metadata?.color_namespace),
