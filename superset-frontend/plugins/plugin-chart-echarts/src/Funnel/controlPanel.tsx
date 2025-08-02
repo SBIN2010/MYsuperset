@@ -38,7 +38,7 @@ const { labelType, numberFormat, showLabels, defaultTooltipLabel } =
   DEFAULT_FORM_DATA;
 
 const funnelLegendSection = [...legendSection];
-funnelLegendSection.splice(2, 1);
+funnelLegendSection.splice(3, 1);
 
 const config: ControlPanelConfig = {
   controlPanelSections: [

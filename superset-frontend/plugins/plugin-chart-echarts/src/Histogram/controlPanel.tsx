@@ -31,7 +31,11 @@ import {
   D3_FORMAT_DOCS,
   D3_NUMBER_FORMAT_DESCRIPTION_VALUES_TEXT,
 } from '@superset-ui/chart-controls';
-import { showLegendControl, showValueControl } from '../controls';
+import {
+  showLegendControl,
+  showSelectorlegendControl,
+  showValueControl,
+} from '../controls';
 
 const config: ControlPanelConfig = {
   controlPanelSections: [
@@ -114,6 +118,7 @@ const config: ControlPanelConfig = {
         ['color_scheme'],
         [showValueControl],
         [showLegendControl],
+        [showSelectorlegendControl],
         [
           {
             name: 'x_axis_title',

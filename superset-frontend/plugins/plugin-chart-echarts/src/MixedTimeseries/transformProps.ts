@@ -171,6 +171,7 @@ export default function transformProps(
     seriesType,
     seriesTypeB,
     showLegend,
+    showSelectorLegend,
     showValue,
     showValueB,
     onlyTotal,
@@ -708,6 +709,7 @@ export default function transformProps(
         legendOrientation,
         showLegend,
         theme,
+        showSelectorLegend,
         zoomable,
       ),
       // @ts-ignore

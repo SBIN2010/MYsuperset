@@ -31,8 +31,13 @@ import { DEFAULT_LEGEND_FORM_DATA, StackControlOptions } from './constants';
 import { DEFAULT_FORM_DATA } from './Timeseries/constants';
 import { defaultXAxis } from './defaults';
 
-const { legendMargin, legendOrientation, legendType, showLegend } =
-  DEFAULT_LEGEND_FORM_DATA;
+const {
+  legendMargin,
+  legendOrientation,
+  legendType,
+  showLegend,
+  showSelectorLegend,
+} = DEFAULT_LEGEND_FORM_DATA;
 
 export const showLegendControl: ControlSetItem = {
   name: 'show_legend',
@@ -42,6 +47,19 @@ export const showLegendControl: ControlSetItem = {
     renderTrigger: true,
     default: showLegend,
     description: t('Whether to display a legend for the chart'),
+  },
+};
+
+export const showSelectorlegendControl: ControlSetItem = {
+  name: 'show_selector_legend',
+  config: {
+    type: 'CheckboxControl',
+    label: t('Show selector legend'),
+    renderTrigger: true,
+    default: showSelectorLegend,
+    description: t('Whether to display a selector buttons in the legend'),
+    visibility: ({ controls }: ControlPanelsContainerProps) =>
+      Boolean(controls?.show_legend?.value),
   },
 };
 
@@ -100,6 +118,7 @@ const legendOrientationControl: ControlSetItem = {
 export const legendSection: ControlSetRow[] = [
   [<ControlSubSectionHeader>{t('Legend')}</ControlSubSectionHeader>],
   [showLegendControl],
+  [showSelectorlegendControl],
   [legendTypeControl],
   [legendOrientationControl],
   [legendMarginControl],

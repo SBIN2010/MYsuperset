@@ -52,9 +52,13 @@ import { defaultLegendPadding } from '../../src/defaults';
 import { NULL_STRING } from '../../src/constants';
 
 const expectedThemeProps = {
-  selector: ['all', 'inverse'],
+  selector: [
+    { type: 'all', title: 'All' },
+    { type: 'inverse', title: 'Inv' },
+  ],
   selected: undefined,
   selectorLabel: {
+    show: true,
     fontFamily: theme.fontFamily,
     fontSize: theme.fontSizeSM,
     color: theme.colorText,
@@ -773,6 +777,7 @@ describe('getLegendProps', () => {
         LegendOrientation.Top,
         true,
         theme,
+        true,
         false,
       ),
     ).toEqual({
@@ -793,6 +798,7 @@ describe('getLegendProps', () => {
         true,
         theme,
         true,
+        true,
       ),
     ).toEqual({
       show: true,
@@ -806,7 +812,13 @@ describe('getLegendProps', () => {
 
   it('should return the correct props for plain type with left orientation', () => {
     expect(
-      getLegendProps(LegendType.Plain, LegendOrientation.Left, true, theme),
+      getLegendProps(
+        LegendType.Plain,
+        LegendOrientation.Left,
+        true,
+        theme,
+        true,
+      ),
     ).toEqual({
       show: true,
       left: 0,
@@ -823,6 +835,7 @@ describe('getLegendProps', () => {
         LegendOrientation.Right,
         false,
         theme,
+        true,
         false,
       ),
     ).toEqual({
@@ -843,6 +856,7 @@ describe('getLegendProps', () => {
         false,
         theme,
         true,
+        true,
       ),
     ).toEqual({
       show: false,
@@ -856,13 +870,44 @@ describe('getLegendProps', () => {
 
   it('should return the correct props for plain type with bottom orientation', () => {
     expect(
-      getLegendProps(LegendType.Plain, LegendOrientation.Bottom, false, theme),
+      getLegendProps(
+        LegendType.Plain,
+        LegendOrientation.Bottom,
+        false,
+        theme,
+        true,
+      ),
     ).toEqual({
       show: false,
       bottom: 0,
       orient: 'horizontal',
       type: 'plain',
       ...expectedThemeProps,
+    });
+  });
+
+  it('should return the correct props for plain type with bottom orientation', () => {
+    expect(
+      getLegendProps(
+        LegendType.Plain,
+        LegendOrientation.Left,
+        true,
+        theme,
+        false,
+      ),
+    ).toEqual({
+      show: true,
+      left: 0,
+      orient: 'vertical',
+      type: 'plain',
+      ...expectedThemeProps,
+      selectorLabel: {
+        show: false,
+        fontFamily: theme.fontFamily,
+        fontSize: theme.fontSizeSM,
+        color: theme.colorText,
+        borderColor: theme.colorBorder,
+      },
     });
   });
 });

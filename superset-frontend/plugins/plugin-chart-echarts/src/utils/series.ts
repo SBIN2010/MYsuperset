@@ -32,6 +32,7 @@ import {
   SupersetTheme,
   TimeFormatter,
   ValueFormatter,
+  t,
 } from '@superset-ui/core';
 import { SortSeriesType, LegendPaddingType } from '@superset-ui/chart-controls';
 import { format } from 'echarts/core';
@@ -429,6 +430,7 @@ export function getLegendProps(
   orientation: LegendOrientation,
   show: boolean,
   theme: SupersetTheme,
+  showSelectorLegendControl?: boolean,
   zoomable = false,
   legendState?: LegendState,
   padding?: LegendPaddingType,
@@ -442,8 +444,12 @@ export function getLegendProps(
     show,
     type,
     selected: legendState,
-    selector: ['all', 'inverse'],
+    selector: [
+      { type: 'all', title: t('All') },
+      { type: 'inverse', title: t('Inv') },
+    ],
     selectorLabel: {
+      show: showSelectorLegendControl,
       fontFamily: theme.fontFamily,
       fontSize: theme.fontSizeSM,
       color: theme.colorText,

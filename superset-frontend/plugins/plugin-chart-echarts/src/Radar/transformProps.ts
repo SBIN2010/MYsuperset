@@ -116,6 +116,7 @@ export default function transformProps(
     dateFormat,
     showLabels,
     showLegend,
+    showSelectorLegend,
     isCircle,
     columnConfig,
     sliceId,
@@ -353,7 +354,13 @@ export default function transformProps(
       formatter: NormalizedTooltipFormater,
     },
     legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
+      ...getLegendProps(
+        legendType,
+        legendOrientation,
+        showLegend,
+        theme,
+        showSelectorLegend,
+      ),
       data: Array.from(columnsLabelMap.keys()),
     },
     series,

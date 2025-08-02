@@ -158,6 +158,7 @@ export default function transformProps(
     outerRadius,
     showLabels,
     showLegend,
+    showSelectorLegend,
     showLabelsThreshold,
     sliceId,
     showTotal,
@@ -434,7 +435,13 @@ export default function transformProps(
       },
     },
     legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
+      ...getLegendProps(
+        legendType,
+        legendOrientation,
+        showLegend,
+        theme,
+        showSelectorLegend,
+      ),
       data: transformedData.map(datum => datum.name),
     },
     graphic: showTotal
