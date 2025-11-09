@@ -149,6 +149,8 @@ export default function transformProps(
     contributionMode,
     forecastEnabled,
     groupby,
+    verticalLabelPosition,
+    horizontalLabelPosition,
     legendOrientation,
     legendType,
     legendMargin,
@@ -355,6 +357,8 @@ export default function transformProps(
         timeCompare: array,
         timeShiftColor,
         theme,
+        verticalLabelPosition,
+        horizontalLabelPosition,
       },
     );
     if (transformedSeries) {

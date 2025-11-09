@@ -25,11 +25,17 @@ import {
   CustomControlItem,
   DEFAULT_SORT_SERIES_DATA,
   SORT_SERIES_CHOICES,
+  D3_FORMAT_DOCS,
   sharedControls,
 } from '@superset-ui/chart-controls';
-import { DEFAULT_LEGEND_FORM_DATA, StackControlOptions } from './constants';
+import {
+  DEFAULT_LEGEND_FORM_DATA,
+  StackControlOptions,
+  LABEL_POSITION,
+} from './constants';
 import { DEFAULT_FORM_DATA } from './Timeseries/constants';
 import { defaultXAxis } from './defaults';
+import { LabelPositionEnum } from './types';
 
 const { legendMargin, legendOrientation, legendType, showLegend } =
   DEFAULT_LEGEND_FORM_DATA;
@@ -180,16 +186,32 @@ export const percentageThresholdControl: ControlSetItem = {
   },
 };
 
+export const labelPosition: ControlSetItem = {
+  name: 'vertical_label_position',
+  config: {
+    type: 'SelectControl',
+    label: t('Label position'),
+    renderTrigger: true,
+    choices: LABEL_POSITION,
+    default: LabelPositionEnum.Right,
+    description: D3_FORMAT_DOCS,
+    visibility: ({ controls }: ControlPanelsContainerProps) =>
+      Boolean(controls?.show_value?.value),
+  },
+};
+
 export const showValueSection: ControlSetRow[] = [
   [showValueControl],
   [stackControl],
   [onlyTotalControl],
   [percentageThresholdControl],
+  [labelPosition],
 ];
 
 export const showValueSectionWithoutStack: ControlSetRow[] = [
   [showValueControl],
   [onlyTotalControl],
+  [labelPosition],
 ];
 
 const richTooltipControl: ControlSetItem = {

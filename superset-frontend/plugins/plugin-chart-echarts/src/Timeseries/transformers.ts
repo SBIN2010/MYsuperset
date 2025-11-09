@@ -54,6 +54,7 @@ import {
   LegendOrientation,
   OrientationType,
   StackType,
+  LabelPositionEnum,
 } from '../types';
 
 import {
@@ -196,6 +197,8 @@ export function transformSeries(
     timeCompare?: string[];
     timeShiftColor?: boolean;
     theme?: SupersetTheme;
+    verticalLabelPosition?: LabelPositionEnum;
+    horizontalLabelPosition?: LabelPositionEnum;
   },
 ): SeriesOption | undefined {
   const { name, data } = series;
@@ -226,6 +229,8 @@ export function transformSeries(
     timeCompare = [],
     timeShiftColor,
     theme,
+    verticalLabelPosition,
+    horizontalLabelPosition,
   } = opts;
   const contexts = seriesContexts[name || ''] || [];
   const hasForecast =
@@ -361,7 +366,7 @@ export function transformSeries(
     symbolSize: markerSize,
     label: {
       show: !!showValue,
-      position: isHorizontal ? 'right' : 'top',
+      position: isHorizontal ? horizontalLabelPosition : verticalLabelPosition,
       color: theme?.colorText,
       textBorderWidth: 0,
       formatter: (params: any) => {

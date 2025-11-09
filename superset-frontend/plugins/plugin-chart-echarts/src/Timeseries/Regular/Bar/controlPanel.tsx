@@ -24,6 +24,7 @@ import {
   ControlStateMapping,
   ControlSubSectionHeader,
   D3_TIME_FORMAT_DOCS,
+  D3_FORMAT_DOCS,
   formatSelectOptions,
   getStandardizedControls,
   sections,
@@ -43,11 +44,12 @@ import {
 } from '../../../controls';
 
 import { OrientationType } from '../../types';
+import { LabelPositionEnum } from '../../../types';
 import {
   DEFAULT_FORM_DATA,
   TIME_SERIES_DESCRIPTION_TEXT,
 } from '../../constants';
-import { StackControlsValue } from '../../../constants';
+import { StackControlsValue, LABEL_POSITION } from '../../../constants';
 
 const { logAxis, minorSplitLine, truncateYAxis, yAxisBounds, orientation } =
   DEFAULT_FORM_DATA;
@@ -278,6 +280,38 @@ function createAxisControl(axis: 'x' | 'y'): ControlSetRow[] {
   ];
 }
 
+function createLabelControl(orientation: OrientationType): ControlSetRow[] {
+  const isHorizontalOrientation = orientation === OrientationType.Horizontal;
+  const isVertical = (controls: ControlStateMapping) =>
+    Boolean(controls?.orientation.value === OrientationType.Vertical);
+  const isHorizontal = (controls: ControlStateMapping) =>
+    Boolean(controls?.orientation.value === OrientationType.Horizontal);
+  return [
+    [
+      {
+        name: `${orientation}_label_position`,
+        config: {
+          type: 'SelectControl',
+          label: t('Label position'),
+          renderTrigger: true,
+          choices: LABEL_POSITION,
+          default: isHorizontalOrientation
+            ? LabelPositionEnum.Right
+            : LabelPositionEnum.Top,
+          description: D3_FORMAT_DOCS,
+          visibility: ({ controls }: ControlPanelsContainerProps) =>
+            Boolean(controls?.show_value?.value) &&
+            (isHorizontalOrientation
+              ? isHorizontal(controls)
+              : isVertical(controls)),
+          disableStash: true,
+          resetOnHide: false,
+        },
+      },
+    ],
+  ];
+}
+
 const config: ControlPanelConfig = {
   controlPanelSections: [
     sections.echartsTimeSeriesQueryWithXAxisSort,
@@ -324,7 +358,9 @@ const config: ControlPanelConfig = {
         ...seriesOrderSection,
         ['color_scheme'],
         ['time_shift_color'],
-        ...showValueSection,
+        ...showValueSection.slice(0, -1),
+        ...createLabelControl(OrientationType.Horizontal),
+        ...createLabelControl(OrientationType.Vertical),
         [
           {
             name: 'stackDimension',

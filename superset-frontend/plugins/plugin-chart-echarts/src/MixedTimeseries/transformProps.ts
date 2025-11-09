@@ -219,6 +219,8 @@ export default function transformProps(
     showQueryIdentifiers = false,
     metrics = [],
     metricsB = [],
+    verticalLabelPosition,
+    verticalLabelPositionB,
   }: EchartsMixedTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
 
   const refs: Refs = {};
@@ -452,6 +454,7 @@ export default function transformProps(
         thresholdValues,
         timeShiftColor,
         theme,
+        verticalLabelPosition,
       },
     );
 
@@ -524,6 +527,7 @@ export default function transformProps(
         thresholdValues: thresholdValuesB,
         timeShiftColor,
         theme,
+        verticalLabelPosition: verticalLabelPositionB,
       },
     );
 

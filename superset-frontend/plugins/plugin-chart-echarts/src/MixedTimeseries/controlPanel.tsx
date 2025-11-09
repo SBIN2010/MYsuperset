@@ -28,6 +28,7 @@ import {
   getStandardizedControls,
   sections,
   sharedControls,
+  D3_FORMAT_DOCS,
   DEFAULT_SORT_SERIES_DATA,
   SORT_SERIES_CHOICES,
 } from '@superset-ui/chart-controls';
@@ -44,6 +45,9 @@ import {
   xAxisLabelInterval,
   forceMaxInterval,
 } from '../controls';
+
+import { LABEL_POSITION } from '../constants';
+import { LabelPositionEnum } from '../types';
 
 const {
   area,
@@ -214,6 +218,21 @@ function createCustomizeSection(
           visibility: ({ controls }: ControlPanelsContainerProps) =>
             Boolean(controls?.show_value?.value) &&
             Boolean(controls?.stack?.value),
+        },
+      },
+    ],
+    [
+      {
+        name: `vertical_label_position${controlSuffix}`,
+        config: {
+          type: 'SelectControl',
+          label: t('Label position'),
+          renderTrigger: true,
+          choices: LABEL_POSITION,
+          default: LabelPositionEnum.Right,
+          description: D3_FORMAT_DOCS,
+          visibility: ({ controls }: ControlPanelsContainerProps) =>
+            Boolean(controls?.show_value?.value),
         },
       },
     ],
