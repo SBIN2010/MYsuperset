@@ -392,7 +392,7 @@ test('derives header groups from time comparison when header_groups is empty', (
         columnFormats: {},
         currencyFormats: {},
         verboseMap: { revenue: 'Revenue' },
-      },
+      } as unknown as TableChartProps['datasource'],
       queriesData: [
         {
           data: [{ revenue: 100 }],
