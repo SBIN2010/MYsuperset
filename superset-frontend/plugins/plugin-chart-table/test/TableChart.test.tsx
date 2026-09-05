@@ -302,7 +302,12 @@ describe('plugin-chart-table', () => {
             {
               id: 'time-compare-metric_1',
               label: 'Renamed metric',
-              columns: ['Main metric_1', '# metric_1', '△ metric_1', '% metric_1'],
+              columns: [
+                'Main metric_1',
+                '# metric_1',
+                '△ metric_1',
+                '% metric_1',
+              ],
               source: 'time_compare',
             },
           ],
