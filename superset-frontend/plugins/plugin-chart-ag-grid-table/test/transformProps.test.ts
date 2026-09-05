@@ -19,7 +19,7 @@
 import transformProps from '../src/transformProps';
 import { TableChartProps } from '../src/types';
 import { GenericDataType } from '@apache-superset/core/common';
-import { QueryMode } from '@superset-ui/core';
+import { ComparisonType, QueryMode } from '@superset-ui/core';
 import { BoundUnit } from '@superset-ui/chart-controls';
 
 function createMockChartProps(
@@ -370,4 +370,113 @@ test('retains saved percentage rules with automatic bounds when server paginatio
   expect(
     result.columnColorFormatters.map(formatter => formatter.column),
   ).toEqual(['metric_a', 'metric_b']);
+});
+
+test('derives header groups from time comparison when header_groups is empty', () => {
+  const result = transformProps(
+    createMockChartProps({
+      rawFormData: {
+        viz_type: 'table',
+        datasource: '1__table',
+        query_mode: QueryMode.Aggregate,
+        metrics: ['revenue'],
+        percent_metrics: [],
+        column_config: {},
+        table_timestamp_format: '',
+        time_compare: ['1 year ago'],
+        comparison_type: ComparisonType.Values,
+      },
+      datasource: {
+        columns: [],
+        metrics: [],
+        columnFormats: {},
+        currencyFormats: {},
+        verboseMap: { revenue: 'Revenue' },
+      },
+      queriesData: [
+        {
+          data: [{ revenue: 100 }],
+          colnames: ['revenue'],
+          coltypes: [GenericDataType.Numeric],
+          rowcount: 1,
+          applied_filters: [],
+          rejected_filters: [],
+        },
+      ] as unknown as TableChartProps['queriesData'],
+    }),
+  );
+
+  expect(result.headerGroups).toEqual([
+    expect.objectContaining({
+      id: 'time-compare-revenue',
+      label: 'Revenue',
+      source: 'time_compare',
+    }),
+  ]);
+});
+
+test('keeps renamed time comparison header groups', () => {
+  const result = transformProps(
+    createMockChartProps({
+      rawFormData: {
+        viz_type: 'table',
+        datasource: '1__table',
+        query_mode: QueryMode.Aggregate,
+        metrics: ['revenue'],
+        percent_metrics: [],
+        column_config: {},
+        table_timestamp_format: '',
+        time_compare: ['1 year ago'],
+        comparison_type: ComparisonType.Values,
+        header_groups: [
+          {
+            id: 'time-compare-revenue',
+            label: 'Renamed',
+            columns: ['Main revenue', '# revenue', '△ revenue', '% revenue'],
+            source: 'time_compare',
+          },
+        ],
+      },
+      queriesData: [
+        {
+          data: [{ revenue: 100 }],
+          colnames: ['revenue'],
+          coltypes: [GenericDataType.Numeric],
+          rowcount: 1,
+          applied_filters: [],
+          rejected_filters: [],
+        },
+      ] as unknown as TableChartProps['queriesData'],
+    }),
+  );
+
+  expect(result.headerGroups?.[0].label).toBe('Renamed');
+});
+
+test('drops time comparison header groups when time_compare is empty', () => {
+  const result = transformProps(
+    createMockChartProps({
+      rawFormData: {
+        viz_type: 'table',
+        datasource: '1__table',
+        query_mode: QueryMode.Aggregate,
+        metrics: ['revenue'],
+        percent_metrics: [],
+        column_config: {},
+        table_timestamp_format: '',
+        time_compare: [],
+        comparison_type: ComparisonType.Values,
+        header_groups: [
+          {
+            id: 'time-compare-revenue',
+            label: 'Revenue',
+            columns: ['Main revenue'],
+            source: 'time_compare',
+          },
+        ],
+      },
+    }),
+  );
+
+  expect(result.headerGroups).toEqual([]);
 });

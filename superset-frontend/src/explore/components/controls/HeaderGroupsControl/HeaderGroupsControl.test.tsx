@@ -184,6 +184,33 @@ test('locks columns on automatically created time comparison groups', async () =
   ).not.toBeInTheDocument();
 });
 
+test('removes stale time comparison groups when they are no longer provided', () => {
+  const onChange = jest.fn();
+  render(
+    <HeaderGroupsControl
+      {...baseProps}
+      value={[
+        createGroup({
+          id: 'time-compare-sales',
+          source: 'time_compare',
+          columns: ['Main SUM(sales)'],
+        }),
+        createGroup({
+          id: 'custom',
+          label: 'Custom',
+          columns: ['SUM(cost)'],
+        }),
+      ]}
+      timeComparisonGroups={[]}
+      onChange={onChange}
+    />,
+  );
+
+  expect(onChange).toHaveBeenCalledWith([
+    expect.objectContaining({ id: 'custom' }),
+  ]);
+});
+
 test('creates time comparison groups when they are provided', () => {
   const onChange = jest.fn();
   const timeComparisonGroups: HeaderGroupConfig[] = [

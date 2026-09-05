@@ -276,6 +276,66 @@ describe('plugin-chart-table', () => {
       expect(comparisonColumns.some(col => col.label === '%')).toBe(true);
     });
 
+    test('should derive header groups from time comparison when header_groups is empty', () => {
+      const transformedProps = transformProps(testData.comparison);
+
+      expect(transformedProps.headerGroups).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'time-compare-metric_1',
+            source: 'time_compare',
+          }),
+          expect.objectContaining({
+            id: 'time-compare-metric_2',
+            source: 'time_compare',
+          }),
+        ]),
+      );
+    });
+
+    test('should keep renamed time comparison header groups', () => {
+      const transformedProps = transformProps({
+        ...testData.comparison,
+        rawFormData: {
+          ...testData.comparison.rawFormData,
+          header_groups: [
+            {
+              id: 'time-compare-metric_1',
+              label: 'Renamed metric',
+              columns: ['Main metric_1', '# metric_1', '△ metric_1', '% metric_1'],
+              source: 'time_compare',
+            },
+          ],
+        },
+      });
+
+      expect(
+        transformedProps.headerGroups?.find(
+          group => group.id === 'time-compare-metric_1',
+        )?.label,
+      ).toBe('Renamed metric');
+    });
+
+    test('should drop time comparison header groups when time_compare is empty', () => {
+      const transformedProps = transformProps({
+        ...testData.comparison,
+        rawFormData: {
+          ...testData.comparison.rawFormData,
+          time_compare: [],
+          header_groups: [
+            {
+              id: 'time-compare-metric_1',
+              label: 'Metric 1',
+              columns: ['Main metric_1'],
+              source: 'time_compare',
+            },
+          ],
+        },
+      });
+
+      expect(transformedProps.headerGroups).toEqual([]);
+    });
+
     test('should not process comparison columns when time_compare is empty', () => {
       const propsWithoutTimeCompare = {
         ...testData.comparison,

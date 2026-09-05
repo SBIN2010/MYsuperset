@@ -20,6 +20,7 @@ import { t } from '@apache-superset/core/translation';
 import {
   expandGroupColumnKey,
   getHeaderGroupsControlProps,
+  headerGroupsHaveSameColumns,
   nestColDefsInHeaderGroups,
   resolveHeaderGroups,
   syncTimeComparisonGroups,
@@ -226,6 +227,42 @@ test('resolveHeaderGroups derives time comparison groups without saved header_gr
   ).toEqual([]);
 });
 
+test('resolveHeaderGroups keeps user groups and renamed auto groups', () => {
+  const next = resolveHeaderGroups(
+    [
+      { id: 'custom', label: 'Custom', columns: ['region'] },
+      {
+        id: 'time-compare-revenue',
+        label: 'Renamed',
+        columns: comparisonRevenueColumns,
+        source: 'time_compare',
+      },
+    ],
+    {
+      timeCompareEnabled: true,
+      metricKeys: ['revenue', 'profit'],
+      verboseMap: { revenue: 'Revenue', profit: 'Profit' },
+    },
+  );
+
+  expect(next.map(group => group.id)).toEqual([
+    'custom',
+    'time-compare-revenue',
+    'time-compare-profit',
+  ]);
+  expect(next[1].label).toBe('Renamed');
+  expect(next[2].label).toBe('Profit');
+});
+
+test('headerGroupsHaveSameColumns compares ids and nested columns', () => {
+  expect(headerGroupsHaveSameColumns(chartGroups, chartGroups)).toBe(true);
+  expect(
+    headerGroupsHaveSameColumns(chartGroups, [
+      { ...chartGroups[0], columns: ['profit'] },
+    ]),
+  ).toBe(false);
+});
+
 test('getHeaderGroupsControlProps builds time comparison groups', () => {
   const result = getHeaderGroupsControlProps(
     {
@@ -250,5 +287,30 @@ test('getHeaderGroupsControlProps builds time comparison groups', () => {
     '# revenue',
     '△ revenue',
     '% revenue',
+  ]);
+});
+
+test('getHeaderGroupsControlProps returns no auto groups without time comparison', () => {
+  const result = getHeaderGroupsControlProps(
+    {
+      form_data: { metrics: ['revenue'] },
+      controls: { time_compare: { value: [] } },
+    },
+    { queriesResponse: null },
+  );
+
+  expect(result.timeComparisonGroups).toEqual([]);
+  expect(result.columnOptions.map(option => option.value)).toEqual(['revenue']);
+});
+
+test('getHeaderGroupsControlProps includes percent metrics in auto groups', () => {
+  const result = getHeaderGroupsControlProps({
+    form_data: { metrics: ['revenue'], percent_metrics: ['profit'] },
+    controls: { time_compare: { value: '1 year ago' } },
+  });
+
+  expect(result.timeComparisonGroups.map(group => group.id)).toEqual([
+    'time-compare-revenue',
+    'time-compare-%profit',
   ]);
 });

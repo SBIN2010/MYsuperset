@@ -624,9 +624,15 @@ describe('ControlPanelsContainer', () => {
     getChartControlPanelRegistry().remove('pie');
   });
 
-  test('syncs time comparison header groups without opening Customize', async () => {
+  function withHeaderGroupsSync(
+    overrides: Partial<ControlPanelsContainerProps> = {},
+  ) {
     const setControlValue = jest.fn();
     const props = getDefaultProps();
+    const timeCompareControl = {
+      type: 'SelectControl' as const,
+      value: '1 year ago',
+    };
     props.actions = { setControlValue };
     props.controls = {
       ...props.controls,
@@ -634,10 +640,7 @@ describe('ControlPanelsContainer', () => {
         type: 'HeaderGroupsControl',
         value: [],
       },
-      time_compare: {
-        type: 'SelectControl',
-        value: '1 year ago',
-      },
+      time_compare: timeCompareControl,
     };
     props.exploreState = {
       ...props.exploreState,
@@ -647,12 +650,15 @@ describe('ControlPanelsContainer', () => {
       },
       controls: {
         ...props.controls,
-        time_compare: {
-          type: 'SelectControl',
-          value: '1 year ago',
-        },
+        time_compare: timeCompareControl,
       },
     };
+    Object.assign(props, overrides);
+    return { props, setControlValue };
+  }
+
+  test('syncs time comparison header groups without opening Customize', async () => {
+    const { props, setControlValue } = withHeaderGroupsSync();
 
     render(<ControlPanelsContainer {...props} />, { useRedux: true });
 
@@ -665,6 +671,89 @@ describe('ControlPanelsContainer', () => {
             source: 'time_compare',
           }),
         ]),
+        undefined,
+        { programmatic: true },
+      );
+    });
+  });
+
+  test('does not rewrite header groups that already match time comparison', async () => {
+    const autoGroup = {
+      id: 'time-compare-revenue',
+      label: 'Renamed',
+      columns: [`${t('Main')} revenue`, '# revenue', '△ revenue', '% revenue'],
+      source: 'time_compare' as const,
+    };
+    const { props, setControlValue } = withHeaderGroupsSync();
+    props.controls = {
+      ...props.controls,
+      header_groups: {
+        type: 'HeaderGroupsControl',
+        value: [autoGroup],
+      },
+    };
+
+    render(<ControlPanelsContainer {...props} />, { useRedux: true });
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /data/i })).toBeInTheDocument();
+    });
+    expect(setControlValue).not.toHaveBeenCalled();
+  });
+
+  test('does not sync header groups when the control is absent', async () => {
+    const { props, setControlValue } = withHeaderGroupsSync();
+    props.controls = Object.fromEntries(
+      Object.entries(props.controls).filter(
+        ([name]) => name !== 'header_groups',
+      ),
+    );
+
+    render(<ControlPanelsContainer {...props} />, { useRedux: true });
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /data/i })).toBeInTheDocument();
+    });
+    expect(setControlValue).not.toHaveBeenCalled();
+  });
+
+  test('drops time comparison header groups when time comparison is cleared', async () => {
+    const { props, setControlValue } = withHeaderGroupsSync();
+    const emptyTimeCompare = { type: 'SelectControl' as const, value: [] };
+    props.controls = {
+      ...props.controls,
+      header_groups: {
+        type: 'HeaderGroupsControl',
+        value: [
+          {
+            id: 'time-compare-revenue',
+            label: 'Revenue',
+            columns: [`${t('Main')} revenue`],
+            source: 'time_compare',
+          },
+          {
+            id: 'custom',
+            label: 'Custom',
+            columns: ['region'],
+          },
+        ],
+      },
+      time_compare: emptyTimeCompare,
+    };
+    props.exploreState = {
+      ...props.exploreState,
+      controls: {
+        ...props.exploreState.controls,
+        time_compare: emptyTimeCompare,
+      },
+    };
+
+    render(<ControlPanelsContainer {...props} />, { useRedux: true });
+
+    await waitFor(() => {
+      expect(setControlValue).toHaveBeenCalledWith(
+        'header_groups',
+        [expect.objectContaining({ id: 'custom' })],
         undefined,
         { programmatic: true },
       );
