@@ -13,6 +13,7 @@
 
 import {
   ControlPanelConfig,
+  ControlPanelState,
   ControlPanelsContainerProps,
   ControlState,
   CustomControlItem,
@@ -108,22 +109,22 @@ test('header_groups mapStateToProps builds time comparison groups', () => {
         control.name === 'header_groups',
     ) as CustomControlItem | undefined;
 
+  const exploreState = {
+    form_data: { metrics: ['revenue'] },
+    controls: { time_compare: { value: '1 year ago' } },
+  } as unknown as ControlPanelState;
+
   expect(
     item?.config.shouldMapStateToProps?.(
-      {} as ControlState,
-      {} as ControlState,
+      exploreState,
+      exploreState,
       {} as ControlState,
     ),
   ).toBe(true);
   expect(
-    item?.config.mapStateToProps?.(
-      {
-        form_data: { metrics: ['revenue'] },
-        controls: { time_compare: { value: '1 year ago' } },
-      },
-      {} as ControlState,
-      { queriesResponse: null },
-    ),
+    item?.config.mapStateToProps?.(exploreState, {} as ControlState, {
+      queriesResponse: null,
+    }),
   ).toEqual(
     expect.objectContaining({
       timeComparisonGroups: [
