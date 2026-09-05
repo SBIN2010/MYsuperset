@@ -471,7 +471,7 @@ export function getHeaderGroupsControlProps(
     form_data?: unknown;
     controls?: { time_compare?: { value?: unknown } };
   },
-  chart?: { queriesResponse?: Array<{ colnames?: string[] }> },
+  chart?: { queriesResponse?: Array<{ colnames?: string[] }> | null },
 ): {
   columnOptions: { value: string; label: string }[];
   timeComparisonGroups: HeaderGroupConfig[];

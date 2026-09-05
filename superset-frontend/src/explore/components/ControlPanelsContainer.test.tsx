@@ -640,8 +640,18 @@ describe('ControlPanelsContainer', () => {
       },
     };
     props.exploreState = {
-      form_data: { metrics: ['revenue'] },
-      controls: { time_compare: { value: '1 year ago' } },
+      ...props.exploreState,
+      form_data: {
+        ...props.form_data,
+        metrics: ['revenue'],
+      },
+      controls: {
+        ...props.controls,
+        time_compare: {
+          type: 'SelectControl',
+          value: '1 year ago',
+        },
+      },
     };
 
     render(<ControlPanelsContainer {...props} />, { useRedux: true });
