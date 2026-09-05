@@ -16,7 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { render, screen, selectOption } from 'spec/helpers/testing-library';
+import {
+  fireEvent,
+  render,
+  screen,
+  selectOption,
+} from 'spec/helpers/testing-library';
 import userEvent from '@testing-library/user-event';
 import HeaderGroupsControl from './HeaderGroupsControl';
 import { HeaderGroupConfig } from './types';
@@ -209,6 +214,149 @@ test('removes stale time comparison groups when they are no longer provided', ()
   expect(onChange).toHaveBeenCalledWith([
     expect.objectContaining({ id: 'custom' }),
   ]);
+});
+
+test('does not sync groups when onChange is omitted', () => {
+  expect(() =>
+    render(
+      <HeaderGroupsControl
+        {...baseProps}
+        value={[]}
+        timeComparisonGroups={[
+          {
+            id: 'time-compare-sales',
+            label: 'Sales',
+            columns: ['Main SUM(sales)'],
+            source: 'time_compare',
+          },
+        ]}
+      />,
+    ),
+  ).not.toThrow();
+});
+
+test('syncs time comparison groups when column options are empty', () => {
+  const onChange = jest.fn();
+  const timeComparisonGroups: HeaderGroupConfig[] = [
+    {
+      id: 'time-compare-sales',
+      label: 'Sales',
+      columns: ['Main SUM(sales)'],
+      source: 'time_compare',
+    },
+  ];
+
+  render(
+    <HeaderGroupsControl
+      {...baseProps}
+      columnOptions={[]}
+      value={[]}
+      timeComparisonGroups={timeComparisonGroups}
+      onChange={onChange}
+    />,
+  );
+
+  expect(onChange).toHaveBeenCalledWith([
+    expect.objectContaining({ id: 'time-compare-sales' }),
+  ]);
+});
+
+test('edits name, columns, alignment, and placement from the popover', async () => {
+  const onChange = jest.fn();
+  render(
+    <HeaderGroupsControl
+      {...baseProps}
+      value={[createGroup()]}
+      onChange={onChange}
+    />,
+  );
+
+  await userEvent.click(screen.getByText('Group 1'));
+
+  fireEvent.change(screen.getByLabelText('Group name'), {
+    target: { value: 'Revenue' },
+  });
+
+  await selectOption('AVG(sales)', 'Group columns');
+  await userEvent.click(screen.getAllByRole('radio', { name: 'Left' })[0]);
+  await userEvent.click(screen.getAllByRole('radio', { name: 'Left' })[1]);
+
+  const payloads = onChange.mock.calls.map(
+    ([next]) => next as HeaderGroupConfig[],
+  );
+  expect(payloads.some(groups => groups[0].label.includes('Revenue'))).toBe(
+    true,
+  );
+  expect(
+    payloads.some(groups => groups[0].columns.includes('AVG(sales)')),
+  ).toBe(true);
+  expect(payloads.some(groups => groups[0].labelAlign === 'left')).toBe(true);
+  expect(payloads.some(groups => groups[0].placement === 'left')).toBe(true);
+});
+
+test('removes a group from the list', async () => {
+  const onChange = jest.fn();
+  render(
+    <HeaderGroupsControl
+      {...baseProps}
+      value={[createGroup(), createGroup({ id: 'group-2', label: 'Cost' })]}
+      onChange={onChange}
+    />,
+  );
+
+  await userEvent.click(screen.getAllByLabelText('Remove group')[0]);
+
+  expect(onChange).toHaveBeenCalledWith([
+    expect.objectContaining({ id: 'group-2' }),
+  ]);
+});
+
+test('removes a nested subgroup from the edit popover', async () => {
+  const onChange = jest.fn();
+  render(
+    <HeaderGroupsControl
+      {...baseProps}
+      value={[
+        createGroup({
+          children: [
+            createGroup({
+              id: 'child',
+              label: 'Online',
+              columns: ['SUM(cost)'],
+            }),
+          ],
+        }),
+      ]}
+      onChange={onChange}
+    />,
+  );
+
+  await userEvent.click(screen.getByText('Group 1'));
+  expect(screen.getByText('Subgroup 1.1')).toBeInTheDocument();
+
+  await userEvent.click(screen.getAllByLabelText('Remove group')[1]);
+
+  expect(onChange).toHaveBeenCalledWith([
+    expect.objectContaining({ children: [] }),
+  ]);
+});
+
+test('adds a subgroup in the add popover before Apply', async () => {
+  const onChange = jest.fn();
+  render(<HeaderGroupsControl {...baseProps} value={[]} onChange={onChange} />);
+
+  await userEvent.click(screen.getByText('Add group'));
+  await userEvent.type(screen.getByLabelText('Group name'), 'Sales');
+  await selectOption('SUM(sales)', 'Group columns');
+  await userEvent.click(screen.getByRole('button', { name: /Add subgroup/ }));
+
+  expect(screen.getByText('Subgroup 1.1')).toBeInTheDocument();
+  expect(onChange).not.toHaveBeenCalled();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+  const nextGroups = onChange.mock.calls.at(-1)?.[0] as HeaderGroupConfig[];
+  expect(nextGroups[0].children).toHaveLength(1);
 });
 
 test('creates time comparison groups when they are provided', () => {

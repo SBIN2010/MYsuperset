@@ -80,6 +80,21 @@ test('moveHeaderGroup reorders top-level groups', () => {
   expect(next.map(group => group.id)).toEqual(['b', 'a']);
 });
 
+test('moveHeaderGroup returns the same list for invalid indexes', () => {
+  const items: HeaderGroupConfig[] = [
+    { id: 'a', label: 'A', columns: [] },
+    { id: 'b', label: 'B', columns: [] },
+  ];
+  expect(moveHeaderGroup(items, 0, 0)).toBe(items);
+  expect(moveHeaderGroup(items, -1, 1)).toBe(items);
+  expect(moveHeaderGroup(items, 0, 2)).toBe(items);
+});
+
+test('updateHeaderGroupAt and removeHeaderGroupAt no-op on an empty path', () => {
+  expect(updateHeaderGroupAt(groups, [], group => group)).toBe(groups);
+  expect(removeHeaderGroupAt(groups, [])).toBe(groups);
+});
+
 test('collectHeaderGroupColumns walks nested groups', () => {
   expect(collectHeaderGroupColumns(groups)).toEqual([
     'SUM(sales)',

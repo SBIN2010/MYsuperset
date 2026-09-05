@@ -188,8 +188,14 @@ test('renders multi-level header groups above column names', () => {
       {
         id: 'metrics',
         label: 'Metrics',
-        columns: ['sum__num'],
-        children: [],
+        columns: [],
+        children: [
+          {
+            id: 'totals',
+            label: 'Totals',
+            columns: ['sum__num'],
+          },
+        ],
       },
     ],
   };
@@ -197,8 +203,9 @@ test('renders multi-level header groups above column names', () => {
   const { container } = render(<TableChart {...props} sticky={false} />);
   const headerRows = container.querySelectorAll('thead tr');
 
-  expect(headerRows.length).toBeGreaterThanOrEqual(2);
+  expect(headerRows.length).toBeGreaterThanOrEqual(3);
   expect(headerRows[0].textContent).toContain('Metrics');
+  expect(headerRows[1].textContent).toContain('Totals');
   expect(
     Array.from(headerRows[0].querySelectorAll('th')).some(
       th => th.textContent === 'Metrics',

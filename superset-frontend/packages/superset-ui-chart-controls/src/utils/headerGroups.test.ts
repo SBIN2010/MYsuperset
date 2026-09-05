@@ -18,8 +18,11 @@
  */
 import { t } from '@apache-superset/core/translation';
 import {
+  buildHeaderGroupRows,
   expandGroupColumnKey,
+  getHeaderGroupDepth,
   getHeaderGroupsControlProps,
+  getHeaderGroupsMaxDepth,
   headerGroupsHaveSameColumns,
   nestColDefsInHeaderGroups,
   resolveHeaderGroups,
@@ -83,6 +86,35 @@ test('nestColDefsInHeaderGroups wraps matching leaves and leaves ungrouped colum
       children: [{ field: 'revenue' }, { field: 'profit' }],
     },
   ]);
+});
+
+test('getHeaderGroupDepth and getHeaderGroupsMaxDepth walk nested groups', () => {
+  expect(getHeaderGroupDepth(chartGroups[0])).toBe(1);
+  expect(
+    getHeaderGroupDepth({
+      id: 'parent',
+      label: 'Parent',
+      columns: [],
+      children: chartGroups,
+    }),
+  ).toBe(2);
+  expect(getHeaderGroupsMaxDepth([])).toBe(0);
+  expect(getHeaderGroupsMaxDepth(chartGroups)).toBe(1);
+});
+
+test('buildHeaderGroupRows returns no rows without groups or columns', () => {
+  expect(buildHeaderGroupRows([], ['revenue'])).toEqual([]);
+  expect(buildHeaderGroupRows(chartGroups, [])).toEqual([]);
+});
+
+test('nestColDefsInHeaderGroups skips groups that match no columns', () => {
+  expect(
+    nestColDefsInHeaderGroups(
+      [{ key: 'region' }],
+      [{ id: 'sales', label: 'Sales', columns: ['missing'] }],
+      column => ({ field: column.key }),
+    ),
+  ).toEqual([{ field: 'region' }]);
 });
 
 test('expandGroupColumnKey maps a metric to its time comparison columns', () => {
@@ -301,6 +333,34 @@ test('getHeaderGroupsControlProps returns no auto groups without time comparison
 
   expect(result.timeComparisonGroups).toEqual([]);
   expect(result.columnOptions.map(option => option.value)).toEqual(['revenue']);
+});
+
+test('getHeaderGroupsControlProps uses array verbose maps and skips offset columns', () => {
+  const result = getHeaderGroupsControlProps(
+    {
+      datasource: { verbose_map: ['revenue'] },
+      form_data: {
+        metrics: ['revenue'],
+        groupby: ['region'],
+        all_columns: ['unused'],
+      },
+      controls: { time_compare: { value: '1 year ago' } },
+    },
+    {
+      queriesResponse: [
+        { colnames: ['region', 'revenue', 'revenue__1 year ago'] },
+      ],
+    },
+  );
+
+  expect(result.columnOptions.map(option => option.value)).toEqual([
+    'region',
+    `${t('Main')} revenue`,
+    '# revenue',
+    '△ revenue',
+    '% revenue',
+  ]);
+  expect(result.columnOptions[1].label).toBe(`${t('Main')} revenue`);
 });
 
 test('getHeaderGroupsControlProps includes percent metrics in auto groups', () => {

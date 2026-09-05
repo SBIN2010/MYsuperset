@@ -84,6 +84,40 @@ test('transformProps handles null/undefined timestamp values correctly', () => {
   expect(transformedProps.isRawRecords).toBe(true);
 });
 
+test('AgGridTableChart nests columns in header groups', async () => {
+  const props = {
+    ...transformProps(testData.basic),
+    headerGroups: [
+      {
+        id: 'metrics',
+        label: 'Metrics',
+        columns: ['sum__num'],
+      },
+    ],
+  };
+
+  render(
+    ProviderWrapper({
+      children: (
+        <AgGridTableChart
+          {...props}
+          setDataMask={mockSetDataMask}
+          slice_id={1}
+        />
+      ),
+    }),
+  );
+
+  await waitFor(() => {
+    expect(document.querySelector('.ag-container')).toBeInTheDocument();
+  });
+  expect(
+    Array.from(document.querySelectorAll('.ag-header-group-cell-label')).some(
+      cell => cell.textContent?.includes('Metrics'),
+    ),
+  ).toBe(true);
+});
+
 test('AgGridTableChart renders basic data', async () => {
   const props = transformProps(testData.basic);
   render(

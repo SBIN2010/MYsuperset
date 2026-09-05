@@ -78,7 +78,7 @@ function withControls(
   } as unknown as ControlPanelsContainerProps;
 }
 
-test('header_groups is always present without a visibility gate', () => {
+function getHeaderGroupsControl() {
   const item = (config.controlPanelSections || [])
     .flatMap(section => section?.controlSetRows || [])
     .flat()
@@ -89,9 +89,48 @@ test('header_groups is always present without a visibility gate', () => {
         'name' in control &&
         control.name === 'header_groups',
     ) as CustomControlItem | undefined;
+  if (!item) {
+    throw new Error('header_groups control not found');
+  }
+  return item;
+}
+
+test('header_groups is always present without a visibility gate', () => {
+  const item = getHeaderGroupsControl();
 
   expect(item).toBeDefined();
-  expect(item?.config.visibility).toBeUndefined();
+  expect(item.config.visibility).toBeUndefined();
+});
+
+test('header_groups mapStateToProps builds time comparison groups', () => {
+  const item = getHeaderGroupsControl();
+
+  expect(
+    item.config.shouldMapStateToProps?.(
+      {} as ControlState,
+      {} as ControlState,
+      {} as ControlState,
+    ),
+  ).toBe(true);
+  expect(
+    item.config.mapStateToProps?.(
+      {
+        form_data: { metrics: ['revenue'] },
+        controls: { time_compare: { value: '1 year ago' } },
+      },
+      {} as ControlState,
+      { queriesResponse: null },
+    ),
+  ).toEqual(
+    expect.objectContaining({
+      timeComparisonGroups: [
+        expect.objectContaining({
+          id: 'time-compare-revenue',
+          source: 'time_compare',
+        }),
+      ],
+    }),
+  );
 });
 
 test('allow_rearrange_columns is hidden when time comparison or header groups are set', () => {
