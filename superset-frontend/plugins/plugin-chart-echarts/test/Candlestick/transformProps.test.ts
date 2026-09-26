@@ -685,15 +685,10 @@ test('qualifies MA names when multiple candlestick series are present', () => {
       high: 42,
     },
   ];
-  const props = transformProps(
-    new ChartProps({
-      formData: { ...formData, series: 'symbol', moving_averages: [2] },
-      width: 800,
-      height: 600,
-      queriesData: [{ data: seriesData }],
-      theme: supersetTheme,
-    }) as unknown as EchartsCandlestickChartProps,
-  );
+  const props = transform(seriesData, {
+    series: 'symbol',
+    moving_averages: [2],
+  });
   expect(extractSeries(props).map(item => item.name)).toEqual([
     'AAPL',
     'GOOG',
@@ -730,15 +725,10 @@ test('keeps a series moving average from gapping at a date only another series h
       high: 32,
     },
   ];
-  const props = transformProps(
-    new ChartProps({
-      formData: { ...formData, series: 'symbol', moving_averages: [2] },
-      width: 800,
-      height: 600,
-      queriesData: [{ data: seriesData }],
-      theme: supersetTheme,
-    }) as unknown as EchartsCandlestickChartProps,
-  );
+  const props = transform(seriesData, {
+    series: 'symbol',
+    moving_averages: [2],
+  });
   const series = extractSeries(props);
   const aMa = series.find(item => item.name === 'A MA2');
   // Union category order: A's first date, B's only date, then A's other two
@@ -1056,6 +1046,26 @@ test('tooltip includes the series name when a series dimension has a single valu
     ],
   );
   expect(tooltipHtml).toContain('AAPL (Increase)');
+});
+
+test('tooltip omits a null moving-average point instead of showing 0', () => {
+  const tooltipHtml = getTooltipHtml(buildProps({ moving_averages: [2] }), [
+    {
+      dataIndex: 1,
+      name: '2017-10-25',
+      seriesType: 'candlestick',
+      value: [40, 35, 30, 50],
+      data: [40, 35, 30, 50],
+    },
+    {
+      dataIndex: 1,
+      seriesType: 'line',
+      seriesName: 'MA2',
+      value: null,
+    },
+  ]);
+  expect(tooltipHtml).not.toContain('MA2');
+  expect(tooltipHtml).not.toMatch(/>0</);
 });
 
 test('tooltip includes moving-average line values', () => {

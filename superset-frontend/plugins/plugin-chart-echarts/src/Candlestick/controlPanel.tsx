@@ -219,7 +219,7 @@ const config: ControlPanelConfig = {
             config: {
               type: 'TextControl',
               label: t('Series name'),
-              default: CANDLESTICK_SERIES_NAME,
+              placeholder: CANDLESTICK_SERIES_NAME,
               renderTrigger: true,
               description: t(
                 'Name used for the candlestick series in the legend and tooltip when no series dimension is set.',

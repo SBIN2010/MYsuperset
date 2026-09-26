@@ -649,3 +649,20 @@ describe('initial SFD between different datasource', () => {
     );
   });
 });
+
+test('collects candlestick OHLC metrics into standardized controls', () => {
+  const controls = StandardizedFormData.getStandardizedControls({
+    datasource: '1__table',
+    viz_type: VizType.Table,
+    open: 'open_col',
+    close: 'close_col',
+    high: 'high_col',
+    low: 'low_col',
+  } as QueryFormData);
+  expect(controls.metrics).toEqual([
+    'open_col',
+    'close_col',
+    'high_col',
+    'low_col',
+  ]);
+});

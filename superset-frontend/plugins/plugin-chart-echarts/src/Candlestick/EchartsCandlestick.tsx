@@ -29,6 +29,7 @@ import { CandlestickChartTransformedProps } from './types';
 type ContextMenuEvent = {
   event?: { stop?: () => void; event?: PointerEvent };
   dataIndex?: number;
+  seriesIndex?: number;
   seriesName?: string;
   seriesType?: string;
 };
@@ -143,16 +144,13 @@ export default function EchartsCandlestick(
         );
       }
       if (seriesColumn && eventParams.seriesType !== 'line') {
-        const seriesValue = seriesValues.find(
-          item => item.name === eventParams.seriesName,
-        )?.value;
-        if (seriesValue !== undefined) {
+        const seriesEntry =
+          eventParams.seriesIndex != null
+            ? seriesValues[eventParams.seriesIndex]
+            : undefined;
+        if (seriesEntry) {
           drillToDetailFilters.push(
-            toFilterClause(
-              seriesColumn,
-              seriesValue,
-              String(eventParams.seriesName ?? ''),
-            ),
+            toFilterClause(seriesColumn, seriesEntry.value, seriesEntry.name),
           );
         }
       }

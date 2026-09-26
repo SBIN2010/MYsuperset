@@ -17,7 +17,7 @@
  * under the License.
  */
 import { render } from '@testing-library/react';
-import { ChartProps } from '@superset-ui/core';
+import { ChartProps, NULL_STRING } from '@superset-ui/core';
 import { supersetTheme } from '@apache-superset/core/theme';
 import EchartsCandlestick from '../../src/Candlestick/EchartsCandlestick';
 import transformProps from '../../src/Candlestick/transformProps';
@@ -126,6 +126,7 @@ test('opens drill-to-detail with x-axis and series filters on right-click', () =
   eventHandlers.contextmenu({
     event: { stop, event: { clientX: 12, clientY: 34 } },
     dataIndex: 0,
+    seriesIndex: 0,
     seriesName: 'AAPL',
     seriesType: 'candlestick',
   });
@@ -187,10 +188,12 @@ test('keeps a numeric series filter value numeric on right-click', () => {
   eventHandlers.contextmenu({
     event: { stop, event: { clientX: 12, clientY: 34 } },
     dataIndex: 0,
+    seriesIndex: 0,
     seriesName: '42',
     seriesType: 'candlestick',
   });
 
+  expect(stop).toHaveBeenCalled();
   expect(onContextMenu).toHaveBeenCalledWith(
     12,
     34,
@@ -246,6 +249,76 @@ test('emits IS NULL when drill-to-detail hits a null x-category', () => {
     34,
     expect.objectContaining({
       drillToDetail: [expect.objectContaining({ col: 'date', op: 'IS NULL' })],
+    }),
+  );
+});
+
+test('drills the series by index when two series share the null placeholder', () => {
+  const onContextMenu = jest.fn();
+  const transformed = transformProps(
+    new ChartProps({
+      formData: {
+        datasource: '3__table',
+        x_axis: 'date',
+        open: 'open',
+        close: 'close',
+        high: 'high',
+        low: 'low',
+        series: 'symbol',
+        moving_averages: [],
+      },
+      width: 800,
+      height: 600,
+      queriesData: [
+        {
+          data: [
+            {
+              date: '2017-10-24',
+              symbol: null,
+              open: 20,
+              close: 34,
+              low: 10,
+              high: 38,
+            },
+            {
+              date: '2017-10-24',
+              symbol: NULL_STRING,
+              open: 40,
+              close: 35,
+              low: 30,
+              high: 50,
+            },
+          ],
+        },
+      ],
+      theme: supersetTheme,
+      hooks: { onContextMenu },
+    }) as unknown as EchartsCandlestickChartProps,
+  );
+
+  render(<EchartsCandlestick {...transformed} onContextMenu={onContextMenu} />);
+
+  const { eventHandlers } = mockedEchart.mock.calls[0][0] as {
+    eventHandlers: EventHandlers;
+  };
+  const stop = jest.fn();
+  eventHandlers.contextmenu({
+    event: { stop, event: { clientX: 12, clientY: 34 } },
+    dataIndex: 0,
+    seriesIndex: 1,
+    seriesName: NULL_STRING,
+    seriesType: 'candlestick',
+  });
+
+  expect(stop).toHaveBeenCalled();
+  expect(onContextMenu).toHaveBeenCalledWith(
+    12,
+    34,
+    expect.objectContaining({
+      drillToDetail: [
+        expect.objectContaining({ col: 'date', val: '2017-10-24' }),
+        expect.objectContaining({ col: 'symbol', val: NULL_STRING }),
+      ],
     }),
   );
 });

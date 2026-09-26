@@ -241,11 +241,14 @@ function extractOhlc(value: unknown): OhlcValue | null {
 
 function extractLineValue(item: CallbackDataParams): number | null {
   const raw = item.value ?? item.data;
-  if (Array.isArray(raw)) {
-    const y = Number(raw[raw.length - 1]);
-    return Number.isFinite(y) ? y : null;
+  if (raw == null) {
+    return null;
   }
-  const numeric = Number(raw);
+  const point = Array.isArray(raw) ? raw[raw.length - 1] : raw;
+  if (point == null || point === '-') {
+    return null;
+  }
+  const numeric = Number(point);
   return Number.isFinite(numeric) ? numeric : null;
 }
 
@@ -367,7 +370,7 @@ export default function transformProps(
   // Matches buildQuery.ts's getXAxisColumn: an unset x_axis with
   // granularity_sqla present still queries DTTM_ALIAS, so the transform must
   // resolve the same column or every row collapses into one empty category.
-  const xAxisName = (getXAxisLabel(chartProps.rawFormData) as string) ?? '';
+  const xAxisName = getXAxisLabel(chartProps.rawFormData) ?? '';
   const seriesColumns = ensureIsArray(seriesControl).map(getColumnLabel);
   const [seriesName] = seriesColumns;
   const defaultSeriesLabel =
