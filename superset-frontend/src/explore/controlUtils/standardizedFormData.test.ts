@@ -180,6 +180,10 @@ describe('should collect control values and create SFD', () => {
     x: 'm5',
     y: 'm6',
     secondary_metric: 'm7',
+    open: 'm8',
+    close: 'm9',
+    high: 'm10',
+    low: 'm11',
     // columns
     groupby: ['c1'],
     columns: ['c2'],
@@ -312,6 +316,10 @@ describe('should collect control values and create SFD', () => {
       'm5',
       'm6',
       'm7',
+      'm8',
+      'm9',
+      'm10',
+      'm11',
     ]);
     expect(sfd.serialize().controls.columns).toEqual([
       'c1',
@@ -354,6 +362,10 @@ describe('should collect control values and create SFD', () => {
       'm5',
       'm6',
       'm7',
+      'm8',
+      'm9',
+      'm10',
+      'm11',
     ]);
   });
 
